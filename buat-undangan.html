@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Pembuat Link & Pesan Undangan | Saskia & Regi</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: 10px 16px 40px; color: #542d10; background: radial-gradient(ellipse at 15% 10%, #f4dfb6 0, #f7f0e5 42%, #f4eee5 100%); font-family: Georgia, 'Times New Roman', serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 48px 42px 40px; border: 1px solid #dfb85f; border-radius: 26px; background: rgba(255,253,250,.96); box-shadow: 0 18px 60px rgba(94,57,20,.12); }
+    h1 { margin: 0 0 14px; font-size: clamp(30px, 5vw, 40px); line-height: 1.2; color: #713c12; }
+    .intro { margin: 0 0 24px; font-size: 16px; line-height: 1.65; }
+    .note { margin: 0 0 19px; padding: 13px 16px; border-left: 3px solid #d39b28; border-radius: 7px; background: #fbf4e6; font-size: 14px; line-height: 1.5; }
+    label { display: block; margin: 18px 0 8px; font-size: 16px; font-weight: 700; }
+    input, textarea { display: block; width: 100%; padding: 14px; border: 1px solid #e3cda9; border-radius: 13px; color: #60432b; background: #fffefd; font: 16px/1.55 Georgia, 'Times New Roman', serif; outline: none; }
+    input:focus, textarea:focus { border-color: #d39b28; box-shadow: 0 0 0 3px rgba(211,155,40,.14); }
+    textarea { resize: vertical; }
+    #names { min-height: 190px; }
+    .subrow { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: #8a7258; font: 12px Arial, sans-serif; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+    button { padding: 12px 19px; border: 1px solid #e2c78c; border-radius: 999px; color: #542d10; background: #f8eed9; font: 700 14px Georgia, 'Times New Roman', serif; letter-spacing: .03em; cursor: pointer; transition: transform .18s ease, background .18s ease; }
+    button:hover { transform: translateY(-1px); background: #f3e1b8; }
+    button.primary { border-color: #bb8929; color: white; background: linear-gradient(135deg, #d9ad42, #a97418); }
+    button:disabled { cursor: not-allowed; opacity: .5; transform: none; }
+    #status { min-height: 20px; margin: 15px 0 6px; font-size: 14px; }
+    #resultsWrap[hidden] { display: none; }
+    .guest-result { margin: 14px 0; padding: 17px; border: 1px solid #ead6ae; border-radius: 16px; background: #fffdf8; box-shadow: 0 6px 18px rgba(94,57,20,.07); }
+    .guest-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .guest-head strong { font-size: 17px; color: #713c12; }
+    .guest-head button { padding: 9px 13px; font-size: 12px; }
+    .guest-link { margin: 12px 0 0; overflow-wrap: anywhere; font: 12px/1.5 Arial, sans-serif; }
+    .guest-link a { color: #185a79; }
+    .message { max-height: 420px; margin: 12px 0 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 13px; border: 1px solid #efe5d4; border-radius: 11px; background: #fff; color: #463526; font: 13px/1.55 Arial, sans-serif; }
+    .help { margin: 23px 0 0; padding-top: 15px; border-top: 1px solid #f0e3cd; color: #836d54; font-size: 12px; line-height: 1.6; }
+    @media (max-width: 600px) { body { padding: 10px 10px 28px; } main { padding: 32px 20px; border-radius: 20px; } .actions button { flex: 1 1 42%; } .guest-head { align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Pembuat Link Undangan Tamu</h1>
+    <p class="intro">Masukkan kedua link undangan dan daftar nama tamu. Setiap nama akan dibuatkan link personal untuk pernikahan dan ngunduh mantu, sekaligus pesan broadcast yang siap disalin.</p>
+    <p class="note">Daftar nama diproses di browser ini saja. Tidak dikirim ke server.</p>
+
+    <label for="weddingUrl">Link undangan pernikahan yang sudah dipublikasikan</label>
+    <input id="weddingUrl" type="url" inputmode="url" placeholder="https://pernikahan.pages.dev/" autocomplete="url" required>
+    <label for="ngunduhUrl">Link undangan ngunduh mantu yang sudah dipublikasikan</label>
+    <input id="ngunduhUrl" type="url" inputmode="url" placeholder="https://ngunduh-mantu.pages.dev/" autocomplete="url" required>
+    <label for="names">Nama tamu (satu nama per baris)</label>
+    <textarea id="names" maxlength="20000" placeholder="Nabila & Bilal&#10;Bpk. Ahmad dan keluarga&#10;Ibu Rina"></textarea>
+    <div class="subrow"><span>Satu nama untuk setiap baris</span><span id="count">0 / 200 nama</span></div>
+    <div class="actions">
+      <button id="generate" class="primary" type="button">Buat Link & Pesan</button>
+      <button id="copyAll" type="button" disabled>Salin Semua Pesan</button>
+      <button id="download" type="button" disabled>Unduh CSV</button>
+    </div>
+    <p id="status" role="status" aria-live="polite"></p>
+    <section id="resultsWrap" hidden>
+      <label>Pesan personal siap dikirim</label>
+      <div id="results"></div>
+    </section>
+    <p class="help">Setelah kedua undangan dipublikasikan, tempel masing-masing link di atas. Masukkan sampai 200 nama. Setiap kartu hasil berisi dua link personal dan pesan broadcast khusus untuk tamu tersebut.</p>
+  </main>
+  <script>
+    const weddingInput = document.getElementById('weddingUrl');
+    const ngunduhInput = document.getElementById('ngunduhUrl');
+    const namesInput = document.getElementById('names');
+    const count = document.getElementById('count');
+    const status = document.getElementById('status');
+    const results = document.getElementById('results');
+    const resultsWrap = document.getElementById('resultsWrap');
+    const copyAllButton = document.getElementById('copyAll');
+    const downloadButton = document.getElementById('download');
+    let rows = [];
+
+    function getNames() { return namesInput.value.split(/\r?\n/).map(name => name.trim()).filter(Boolean); }
+    function updateCount() {
+      const n = getNames().length;
+      count.textContent = `${n} / 200 nama`;
+      count.style.color = n > 200 ? '#b91c1c' : '';
+    }
+    namesInput.addEventListener('input', updateCount);
+
+    function makePersonalLink(rawUrl, name) {
+      const url = new URL(rawUrl.trim());
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Link harus menggunakan http:// atau https://');
+      url.search = '';
+      url.hash = '';
+      url.searchParams.set('to', name);
+      return url.href;
+    }
+
+    function makeMessage(name, weddingLink, ngunduhLink) {
+      return `بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\n💐 UNDANGAN PERNIKAHAN & NGUNDUH MANTU 💐\n\nAssalamu’alaikum Warahmatullahi Wabarakatuh.\n\nKepada Yth. ${name}\n\nDengan memohon rahmat dan ridha Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk berkenan hadir dan memberikan doa restu pada hari bahagia pernikahan kami:\n\n🤍 Regi Ardiansyah & Saskia Aulia Rachman 🤍\n\n💌 Undangan Pernikahan\n${weddingLink}\n\nApabila Bapak/Ibu/Saudara/i berhalangan hadir pada acara pernikahan tersebut, kami juga mengundang untuk hadir dalam acara Ngunduh Mantu yang insyaAllah akan diselenggarakan pada:\n\n🌸 Undangan Ngunduh Mantu\n${ngunduhLink}\n\nInformasi lengkap mengenai waktu dan tempat acara dapat dilihat melalui tautan undangan masing-masing.\n\nMerupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu bagi perjalanan rumah tangga kami.\n\nAtas perhatian dan doa restunya, kami ucapkan terima kasih.\n\nWassalamu’alaikum Warahmatullahi Wabarakatuh.\n\nHormat kami,\n\nRegi & Saskia 🤍💍`;
+    }
+
+    function renderRows() {
+      results.replaceChildren();
+      rows.forEach(row => {
+        const card = document.createElement('article');
+        card.className = 'guest-result';
+        const head = document.createElement('div'); head.className = 'guest-head';
+        const title = document.createElement('strong'); title.textContent = `Yth. ${row.name}`;
+        const copyButton = document.createElement('button'); copyButton.type = 'button'; copyButton.textContent = 'Salin Pesan';
+        copyButton.addEventListener('click', async () => {
+          await copyText(row.message);
+          status.textContent = `Pesan untuk ${row.name} berhasil disalin.`;
+        });
+        head.append(title, copyButton);
+        const wedding = document.createElement('p'); wedding.className = 'guest-link'; wedding.append('💌 Pernikahan: ');
+        const weddingAnchor = document.createElement('a'); weddingAnchor.href = row.weddingLink; weddingAnchor.target = '_blank'; weddingAnchor.rel = 'noopener'; weddingAnchor.textContent = row.weddingLink; wedding.append(weddingAnchor);
+        const ngunduh = document.createElement('p'); ngunduh.className = 'guest-link'; ngunduh.append('🌸 Ngunduh Mantu: ');
+        const ngunduhAnchor = document.createElement('a'); ngunduhAnchor.href = row.ngunduhLink; ngunduhAnchor.target = '_blank'; ngunduhAnchor.rel = 'noopener'; ngunduhAnchor.textContent = row.ngunduhLink; ngunduh.append(ngunduhAnchor);
+        const message = document.createElement('pre'); message.className = 'message'; message.textContent = row.message;
+        card.append(head, wedding, ngunduh, message); results.append(card);
+      });
+    }
+
+    async function copyText(text) {
+      try { await navigator.clipboard.writeText(text); }
+      catch (_) {
+        const helper = document.createElement('textarea'); helper.value = text; helper.style.position = 'fixed'; helper.style.opacity = '0'; document.body.append(helper); helper.select(); document.execCommand('copy'); helper.remove();
+      }
+    }
+
+    document.getElementById('generate').addEventListener('click', () => {
+      rows = []; results.replaceChildren(); resultsWrap.hidden = true;
+      copyAllButton.disabled = true; downloadButton.disabled = true;
+      const names = getNames();
+      if (!weddingInput.value.trim() || !ngunduhInput.value.trim()) { status.textContent = 'Masukkan link pernikahan dan link ngunduh mantu yang sudah dipublikasikan.'; return; }
+      if (!names.length) { status.textContent = 'Tempel nama tamu, satu nama untuk setiap baris.'; return; }
+      if (names.length > 200) { status.textContent = 'Maksimal 200 nama dalam satu kali pembuatan.'; return; }
+      try {
+        rows = names.map(name => {
+          const weddingLink = makePersonalLink(weddingInput.value, name);
+          const ngunduhLink = makePersonalLink(ngunduhInput.value, name);
+          return { name, weddingLink, ngunduhLink, message: makeMessage(name, weddingLink, ngunduhLink) };
+        });
+      } catch (error) { status.textContent = error.message || 'Periksa kembali kedua alamat undangan.'; return; }
+      renderRows(); resultsWrap.hidden = false;
+      copyAllButton.disabled = false; downloadButton.disabled = false;
+      status.textContent = `${rows.length} pesan personal dengan dua link undangan berhasil dibuat.`;
+    });
+
+    copyAllButton.addEventListener('click', async () => {
+      if (!rows.length) return;
+      await copyText(rows.map(row => row.message).join('\n\n────────────────────\n\n'));
+      status.textContent = 'Semua pesan broadcast berhasil disalin.';
+    });
+
+    downloadButton.addEventListener('click', () => {
+      if (!rows.length) return;
+      const csv = [['Nama Tamu', 'Link Pernikahan', 'Link Ngunduh Mantu', 'Pesan Broadcast'], ...rows.map(row => [row.name, row.weddingLink, row.ngunduhLink, row.message])]
+        .map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\r\n');
+      const objectUrl = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a'); link.href = objectUrl; link.download = 'broadcast-undangan-saskia-regi.csv'; link.click(); URL.revokeObjectURL(objectUrl);
+    });
+  </script>
+</body>
+</html>
